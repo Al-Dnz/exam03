@@ -77,11 +77,11 @@ int main(int argc, char **argv)
 	}
 	t_zone zone;
 	t_rec rec;
-	t_err err;
+
 	char *matrix;
 	int ret;
 
-	if ((ret = fscanf(file, "%d %d %c %d %c %f\n", &zone.width, &zone.height, &zone.color, &err.d, &err.c, &err.f)) != 3)
+	if ((ret = fscanf(file, "%d %d %c\n", &zone.width, &zone.height, &zone.color)) != 3)
 	{
 		printf("probleme dimnesion zone\n");
 		return (1);
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	if (matrix == NULL)
 		return (1);
 	draw(matrix, zone);
-	while ((ret = fscanf(file, "%c %f %f %f %f %c %d %c %f\n", &rec.type, &rec.x, &rec.y, &rec.width, &rec.height, &rec.color, &err.d, &err.c, &err.f)) == 6)
+	while ((ret = fscanf(file, "%c %f %f %f %f %c\n", &rec.type, &rec.x, &rec.y, &rec.width, &rec.height, &rec.color)) == 6)
 	{
 		if (ret != 6 || !valid_dimension(rec))
 		{
