@@ -58,7 +58,7 @@ char *matrix_generator(int width, int height, char col)
 
 int valid_dimension(t_rec rec)
 {
-	return(rec.width > 0 && rec.width < 300 && rec.height > 0 && rec.height < 300);
+	return(rec.width > 0 && rec.width < 300 && rec.height > 0 && rec.height < 300 && (rec.type == 'r' || rec.type == 'R'));
 }
 
 int main(int argc, char **argv)
