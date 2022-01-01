@@ -3,7 +3,10 @@
 #include <stdio.h>
 #include <math.h>
 
-#define ERR_PARSING "%d%c%f"
+/*
+**	(x, y) =>  str[y * width + x]
+*/
+
 
 typedef struct background
 {
@@ -61,6 +64,44 @@ int valid_dimension(t_rec rec)
 	return(rec.width > 0 && rec.width < 300 && rec.height > 0 && rec.height < 300 && (rec.type == 'r' || rec.type == 'R'));
 }
 
+int ft_min(int a, int b)
+{
+	if (a < b)
+		return (a);
+	else
+		return (b);
+}
+
+void	set_rectangle(char *matrix, t_zone zone, t_rec rec)
+{
+	int i;
+	int j;
+
+	int Xbr = rec.x + rec.width -1;
+	int Ybr = rec.y + rec.height -1;
+
+	int Xbr_bis = Xbr - 1;
+	int Ybr_bis = Ybr -1;
+       i = 0;
+       while ( i < zone.height)
+       {
+       	j = 0;
+       	while (j < zone.width)
+       	{
+       		if (rec.x <= j && j <= ft_min(Xbr, zone.width -1) && rec.y <= i && i  <= ft_min(Ybr, zone.height -1))
+       			matrix[i * zone.width + j] = rec.color;
+
+       		if (rec.type == 'r' && rec.x + 1 <= j && j <= ft_min(Xbr_bis, zone.width -1) && rec.y + 1 <= i && i  <= ft_min(Ybr_bis, zone.height -1))
+       			matrix[i * zone.width + j] = zone.color;
+
+       		j++;
+       	}
+       	i++;
+       }
+       
+
+}
+
 int main(int argc, char **argv)
 {
 	FILE *file;
@@ -91,8 +132,8 @@ int main(int argc, char **argv)
 	matrix = matrix_generator(zone.width, zone.height, zone.color);
 	if (matrix == NULL)
 		return (1);
-	draw(matrix, zone);
-	while ((ret = fscanf(file, "%c %f %f %f %f %c\n", &rec.type, &rec.x, &rec.y, &rec.width, &rec.height, &rec.color)) == 6)
+//	rec = (t_rec){0, -1, -1, -1, -1, 0};
+	while ((ret = fscanf(file, "%c %f %f %f %f %c \n", &rec.type, &rec.x, &rec.y, &rec.width, &rec.height, &rec.color)) > 0)
 	{
 		if (ret != 6 || !valid_dimension(rec))
 		{
@@ -102,10 +143,13 @@ int main(int argc, char **argv)
 			fclose(file);
 			return (1);
 		}
+		set_rectangle(matrix, zone, rec);
 
 	
 	}
 
+	draw(matrix, zone);
+	free(matrix);
 	return (0);
 	// printf("zone\nw=%d, h=%d col=%c\n", zone.width, zone.height, zone.color);
 	// printf("scanf_ret = %d\n", ret);
