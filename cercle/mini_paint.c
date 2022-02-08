@@ -31,6 +31,16 @@ typedef struct error
 	float f;
 } t_err;
 
+void ft_putstr(char *str)
+{
+	int i = 0;
+	while (str[i])
+	{
+		write(1, &str[i], 1);
+		i++;
+	}
+}
+
 void	draw(char *str, t_zone zone)
 {
 	int i = 0;
@@ -71,10 +81,31 @@ int ft_min(int a, int b)
 		return (b);
 }
 
+int is_inside_big(t_circle circle, float j, float i)
+{
+	float dist;
+	dist = sqrtf((circle.x - j) * (circle.x - j) + (circle.y - i) * (circle.y - i));
+	if (dist <= circle.radius)
+		return 1;
+	return 0;
+}
+
+
+
+int is_inside_little(t_circle circle, float j, float i)
+{
+	float dist;
+	dist = sqrtf((circle.x - j) * (circle.x - j) + (circle.y - i) * (circle.y - i));
+	if (dist <= circle.radius - 1.00000000)
+		return 1;
+	return 0;
+}
+
 void	set_circle(char *matrix, t_zone zone, t_circle circle)
 {
 	int i;
 	int j;
+	char fond;
 
 
        i = 0;
@@ -83,12 +114,14 @@ void	set_circle(char *matrix, t_zone zone, t_circle circle)
        	j = 0;
        	while (j < zone.width)
        	{
-		if (sqrt((circle.x - j) * (circle.x - j) + (circle.y - i) * (circle.y - i)) <= circle.radius)
+
+		fond = matrix[i * zone.width + j];
+		if (is_inside_big(circle, (float)j, (float)i))
 			matrix[i * zone.width + j] = circle.color;
 		if (circle.type == 'c')
 		{
-			if (sqrt((circle.x - j) * (circle.x - j) + (circle.y - i) * (circle.y - i)) <= circle.radius - 1)
-				matrix[i * zone.width + j] = zone.color;
+			if (is_inside_little(circle, (float)j, (float)i))
+				matrix[i * zone.width + j] = fond;
 		}
        		j++;
        	}
@@ -101,15 +134,14 @@ void	set_circle(char *matrix, t_zone zone, t_circle circle)
 int main(int argc, char **argv)
 {
 	FILE *file;
-
 	if (argc != 2)
 	{
-		write(1, "Error: argument\n", 16);
+		ft_putstr("Error: argument\n");
 		return (1); 
 	}
 	if (!(file = fopen(argv[1], "r")))
 	{
-		write(1, "FILE NO EXIST\n", 14);
+		ft_putstr("Error: Operation file corrupted\n");
 		return (1);
 	}
 	t_zone zone;
@@ -120,28 +152,20 @@ int main(int argc, char **argv)
 
 	if ((ret = fscanf(file, "%d %d %c\n", &zone.width, &zone.height, &zone.color)) != 3)
 	{
-		printf("(0)probleme dimension zone\n");
-		return (1);
+		ft_putstr("Error: Operation file corrupted\n");
 		fclose(file);
-	}
-	if (ret == -1)
-	{
-		printf("(1)probleme dimension zone\n");
 		return (1);
 	}
-	printf("scanf_ret = %d\n", ret);
-	matrix = matrix_generator(zone.width, zone.height, zone.color);
 	if (matrix == NULL)
 		return (1);
-//	circle = (t_circle){0, -1, -1, -1, -1, 0};
-	while ((ret = fscanf(file, "%c %f %f %f %c\n", &circle.type, &circle.x, &circle.y, &circle.radius, &circle.color)) == 5)
+	while ((ret = fscanf(file, "%c %f %f %f %c\n", &circle.type, &circle.x, &circle.y, &circle.radius, &circle.color)) != -1)
 	{
 		if (ret != 5 || !valid_dimension(circle))
 		{
 			if (!valid_dimension(circle))
-				printf("(2)probleme dimnesion circle\n");
+				ft_putstr("Error: Operation file corrupted\n");
 			else if (ret != 5)
-				printf("(3)probleme dimension file\n");
+				ft_putstr("Error: Operation file corrupted\n");
 			free(matrix);
 			matrix = NULL;
 			fclose(file);
@@ -149,12 +173,9 @@ int main(int argc, char **argv)
 		}
 		set_circle(matrix, zone, circle);
 	}
-
 	draw(matrix, zone);
-
+	free(matrix);
+	matrix = NULL;
+	fclose(file);
 	return (0);
-	// printf("zone\nw=%d, h=%d col=%c\n", zone.width, zone.height, zone.color);
-	// printf("scanf_ret = %d\n", ret);
-	// printf("circle\ntype=%c x=%f y=%f w=%f h=%f col=%c\n", circle.type, circle.x, circle.y, circle.width, circle.height, circle.color);
-	// printf("scanf_ret = %d\n", ret);
 }
